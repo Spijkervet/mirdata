@@ -151,3 +151,12 @@ mirdata.jams_utils
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+mirdata.billboard
+^^^^^^^^^^^^^^^
+
+.. automodule:: mirdata.billboard
+   :members:
+   :undoc-members:
+   :show-inheritance:
