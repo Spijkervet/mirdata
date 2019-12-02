@@ -119,12 +119,12 @@ class Track(object):
 
         self.audio_path = os.path.join(self._data_home, self._track_paths['audio'][0])
         self.chart_date = self._track_metadata['chart_date']
-        self.target_rank: self._track_metadata['target_rank']
-        self.actual_rank : self._track_metadata['actual_rank']
+        self.target_rank = self._track_metadata['target_rank']
+        self.actual_rank = self._track_metadata['actual_rank']
         self.title = self._track_metadata['title']
         self.artist = self._track_metadata['artist']
-        self.peak_rank: self._track_metadata['peak_rank']
-        self.weeks_on_chart: self._track_metadata['weeks_on_chart']
+        self.peak_rank = self._track_metadata['peak_rank']
+        self.weeks_on_chart = self._track_metadata['weeks_on_chart']
 
     def __repr__(self):
         repr_string = (
