@@ -114,6 +114,7 @@ class Track(object):
                 "weeks_on_chart": None,
             }
 
+        self.salami_path = os.path.join(self._data_home, self._track_paths["salami"][0])
         self.audio_path = os.path.join(self._data_home, self._track_paths["audio"][0])
         self.chart_date = self._track_metadata["chart_date"]
         self.target_rank = self._track_metadata["target_rank"]
@@ -193,11 +194,19 @@ def _load_sections(sections_path):
 
     timed_sections = _timed_sections(_parse_salami(sections_path))
 
+    # Clean sections
+    timed_sections_clean = [ts for ts in timed_sections if ts["section"] is not None]
+
     start_times, end_times, sections = [], [], []
-    for ts in timed_sections:
-        start_times.append(ts["time"])
-        end_times.append(ts["time"] + ts["length"])
-        sections.append(ts["section"])
+    for idx, ts in enumerate(timed_sections_clean):
+        if idx < len(timed_sections_clean) - 1:
+            start_times.append(timed_sections_clean[idx]["time"])
+            end_times.append(timed_sections_clean[idx + 1]["time"])
+            sections.append(timed_sections_clean[idx]["section"])
+        else:
+            start_times.append(timed_sections_clean[idx]["time"])
+            end_times.append(timed_sections[-1]["time"])  # end of song
+            sections.append(timed_sections_clean[idx]["section"])
 
     section_data = utils.SectionData(np.array([start_times, end_times]).T, sections)
 
