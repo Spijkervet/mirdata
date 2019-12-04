@@ -4,7 +4,8 @@ import json
 import os
 import csv
 
-INDEX_PATH = '../mirdata/indexes/billboard_index.json'
+INDEX_PATH = "../mirdata/indexes/billboard_index.json"
+
 
 def md5(file_path):
     """Get md5 hash of a file.
@@ -20,21 +21,21 @@ def md5(file_path):
         md5 hash of data in file_path
     """
     hash_md5 = hashlib.md5()
-    with open(file_path, 'rb') as fhandle:
-        for chunk in iter(lambda: fhandle.read(4096), b''):
+    with open(file_path, "rb") as fhandle:
+        for chunk in iter(lambda: fhandle.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
 
 def make_index(data_path):
     _index = {}
-    index_file = csv.reader(open(os.path.join(data_path, 'billboard-2.0-index.csv')))
+    index_file = csv.reader(open(os.path.join(data_path, "billboard-2.0-index.csv")))
     for row in index_file:
         k = row[0]
         _index[k] = row[1:]
 
-    annotations_dir = os.path.join(data_path, 'annotations')
-    audio_dir = os.path.join(data_path, 'audio')
+    annotations_dir = os.path.join(data_path, "annotations")
+    audio_dir = os.path.join(data_path, "audio")
     anns = os.listdir(annotations_dir)
 
     track_ids = []
@@ -42,9 +43,9 @@ def make_index(data_path):
     txtfiles = []
     for a in anns:
         for t in sorted(os.listdir(os.path.join(annotations_dir, a))):
-            if 'txt' in t:
+            if "txt" in t:
                 fp = os.path.join(annotations_dir, a, t)
-                track_id = '{}'.format(os.path.basename(a.lstrip('0')))
+                track_id = "{}".format(os.path.basename(a.lstrip("0")))
 
                 if track_id in _index.keys():
                     txtfiles.append(t)
@@ -54,26 +55,56 @@ def make_index(data_path):
                     track_name = _index[track_id][3]
                     artist = _index[track_id][4]
 
-                    _release_date = '{}s'.format(round(int(release_date.split('-')[0]), -1))
-                    audio_path = os.path.join(audio_dir, _release_date, artist, track_name, 'audio.flac')
-                    audio_checksum = ''
+                    _release_date = "{}s".format(
+                        round(int(release_date.split("-")[0]), -1)
+                    )
 
+                    audio_path = os.path.join(
+                        audio_dir, _release_date, artist, track_name, "audio.flac"
+                    )
+                    audio_checksum = None
                     if os.path.exists(audio_path):
                         audio_checksum = md5(audio_path)
-                        # print(track_id, artist, track_name, release_date, audio_checksum)
                     else:
-                        audio_path = ''
+                        audio_path = None
 
+                    annot_rel = os.path.join("annotations", a, t)
+                    audio_rel = os.path.join(
+                        "audio", _release_date, artist, track_name, "audio.flac"
+                    )
                     annot_checksum = md5(fp)
-                    annot_rel = os.path.join('annotations', a, t)
-                    audio_rel = os.path.join('audio', _release_date, artist, track_name, 'audio.flac')
-                    
+
+                    full_fp = os.path.join(annotations_dir, a, "full.lab")
+                    majmin7 = os.path.join(annotations_dir, a, "majmin7.lab")
+                    majmin7inv = os.path.join(annotations_dir, a, "majmin7inv.lab")
+                    majmin = os.path.join(annotations_dir, a, "majmin.lab")
+                    majmininv = os.path.join(annotations_dir, a, "majmininv.lab")
                     index[track_id] = {
-                        'audio': (audio_rel, audio_checksum),
-                        'salami': (annot_rel, annot_checksum)
+                        "audio": (audio_rel, audio_checksum),
+                        "salami": (annot_rel, annot_checksum),
+                        "lab_full": (
+                            os.path.join("annotations", a, "full.lab"),
+                            md5(full_fp),
+                        ),
+                        "lab_majmin7": (
+                            os.path.join("annotations", a, "majmin7.lab"),
+                            md5(majmin7),
+                        ),
+                        "lab_majmin7inv": (
+                            os.path.join("annotations", a, "majmin7inv.lab"),
+                            md5(majmin7inv),
+                        ),
+                        "lab_majmin": (
+                            os.path.join("annotations", a, "majmin.lab"),
+                            md5(majmin),
+                        ),
+                        "lab_majmininv": (
+                            os.path.join("annotations", a, "majmininv.lab"),
+                            md5(majmininv),
+                        ),
                     }
-              
-    with open(INDEX_PATH, 'w') as fhandle:
+
+    with open(INDEX_PATH, "w") as fhandle:
         json.dump(index, fhandle, indent=2)
 
 
@@ -81,10 +112,8 @@ def main(args):
     make_index(args.data_path)
 
 
-if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser(description='Make index file.')
-    PARSER.add_argument(
-        'data_path', type=str, help='Path to data folder.'
-    )
+if __name__ == "__main__":
+    PARSER = argparse.ArgumentParser(description="Make index file.")
+    PARSER.add_argument("data_path", type=str, help="Path to data folder.")
 
     main(PARSER.parse_args())

@@ -29,6 +29,20 @@ ANNOTATIONS_REMOTE = download_utils.RemoteFileMetadata(
     destination_dir=None,
 )
 
+CHORDS_REMOTE = download_utils.RemoteFileMetadata(
+    filename="billboard-2.0.1-lab.tar.xz",
+    url="https://www.dropbox.com/s/t390alzrkx0c9yt/billboard-2.0.1-lab.tar.xz?dl=1",
+    checksum="a7b1fa6a7e454bf73ced7c29207aa597",
+    destination_dir=None,
+)
+
+CHORDS_MIREX13 = download_utils.RemoteFileMetadata(
+    filename="billboard-2.0.1-mirex.tar.xz",
+    url="https://www.dropbox.com/s/fg8lvy79o7etiyc/billboard-2.0.1-mirex.tar.xz?dl=1",
+    checksum="97e5754699f3b45aa5cc70d8a7611c54",
+    destination_dir=None,
+)
+
 
 def _load_metadata(data_home):
 
@@ -115,6 +129,22 @@ class Track(object):
             }
 
         self.salami_path = os.path.join(self._data_home, self._track_paths["salami"][0])
+        self.lab_full_path = os.path.join(
+            self._data_home, self._track_paths["lab_full"][0]
+        )
+        self.lab_majmin7_path = os.path.join(
+            self._data_home, self._track_paths["lab_majmin7"][0]
+        )
+        self.lab_majmin7inv_path = os.path.join(
+            self._data_home, self._track_paths["lab_majmin7inv"][0]
+        )
+        self.lab_majmin_path = os.path.join(
+            self._data_home, self._track_paths["lab_majmin"][0]
+        )
+        self.lab_majmininv_path = os.path.join(
+            self._data_home, self._track_paths["lab_majmininv"][0]
+        )
+
         self.audio_path = os.path.join(self._data_home, self._track_paths["audio"][0])
         self.chart_date = self._track_metadata["chart_date"]
         self.target_rank = self._track_metadata["target_rank"]
@@ -137,9 +167,13 @@ class Track(object):
 
     @utils.cached_property
     def chords(self):
-        return _load_chords(
-            os.path.join(self._data_home, self._track_paths["salami"][0])
-        )
+        return {
+            "full": _load_chords(self.lab_full_path),
+            "majmin7": _load_chords(self.lab_majmin7_path),
+            "majmin7inv": _load_chords(self.lab_majmin7inv_path),
+            "majmin": _load_chords(self.lab_majmin_path),
+            "majmininv": _load_chords(self.lab_majmininv_path),
+        }
 
     @utils.cached_property
     def sections(self):
@@ -153,30 +187,38 @@ class Track(object):
 
     def to_jams(self):
         return jams_utils.jams_converter(
-            chord_data=[(self.chords, None)],
+            chord_data=[
+                (self.chords["full"], "full"),
+                (self.chords["majmin7"], "majmin7"),
+                (self.chords["majmin7inv"], "majmin7inv"),
+                (self.chords["majmin"], "majmin"),
+                (self.chords["majmininv"], "majmininv"),
+            ],
             section_data=[(self.sections, None)],
             metadata=self._track_metadata,
         )
 
 
-def _load_chords(salami_path):
-    """Private function to load SALAMI format chord data from a file
+def _load_chords(path):
+    """Private function to load LAB format chord data from a file
 
     Args:
         chords_path (str):
 
     """
 
-    if salami_path is None or not os.path.exists(salami_path):
+    if path is None or not os.path.exists(path):
         return None
 
-    timed_chords = _timed_chords(_parse_salami(salami_path))
-
     start_times, end_times, chords = [], [], []
-    for tc in timed_chords:
-        start_times.append(tc["time"])
-        end_times.append(tc["time"] + tc["length"])
-        chords.append(tc["chord"])
+    with open(path, "r") as f:
+        for l in f:
+            l = l.rstrip()
+            if l:
+                start, end, label = l.split("\t")
+                start_times.append(float(start))
+                end_times.append(float(end))
+                chords.append(label)
 
     chord_data = utils.ChordData(np.array([start_times, end_times]).T, chords)
     return chord_data
@@ -255,45 +297,6 @@ def _parse_salami(fn):
     return o
 
 
-def _timed_chords(parsed):
-    """
-        Author:
-            Brian Whitman
-            brian@echonest.com
-            https://gist.github.com/bwhitman/11453443
-
-        Given a salami parse return a list of parsed chords with timestamps & deltas
-    """
-    timed_chords = []
-    tic = 0
-    for i, e in enumerate(parsed["events"]):
-        chords = []
-        try:
-            dt = parsed["events"][i + 1]["time"] - e["time"]
-        except IndexError:
-            dt = 0
-
-        for c in e.get("chords", []):
-            for chord_string in c.split(
-                " "
-            ):  # TODO: figure the difference between | | and spaces
-                if chord_string == ".":
-                    chords.append(chords[-1])
-                else:
-                    # chords.append(Chord(chord_string))
-                    chords.append(chord_string)
-
-        tic = e["time"]
-        if len(chords):
-            seconds_per_chord = dt / float(len(chords))
-            for c in chords:
-                timed_chords.append(
-                    {"time": tic, "chord": c, "length": seconds_per_chord}
-                )
-                tic = tic + seconds_per_chord
-    return timed_chords
-
-
 def _timed_sections(parsed):
     """
         Author:
@@ -357,7 +360,7 @@ def download(data_home=None, force_overwrite=False):
 
     download_utils.downloader(
         data_home,
-        tar_downloads=[ANNOTATIONS_REMOTE],
+        tar_downloads=[ANNOTATIONS_REMOTE, CHORDS_REMOTE, CHORDS_MIREX13],
         file_downloads=[INDEX_REMOTE],
         info_message=info_message,
         force_overwrite=force_overwrite,
@@ -366,7 +369,7 @@ def download(data_home=None, force_overwrite=False):
     annotations_dir = os.path.join(data_home, "annotations")
     if force_overwrite:
         if os.path.exists(annotations_dir):
-            os.remove(annotations_dir)
+            shutil.rmtree(annotations_dir)
         shutil.move(os.path.join(data_home, DATASET_DIR), annotations_dir)
     else:
         if os.path.exists(os.path.join(data_home, DATASET_DIR)):
