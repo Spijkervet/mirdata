@@ -175,6 +175,11 @@ class Track(object):
             "majmininv": _load_chords(self.lab_majmininv_path),
         }
 
+    def salami_metadata(self):
+        return _parse_salami_metadata(
+            os.path.join(self._data_home, self._track_paths["salami"][0])
+        )
+
     @utils.cached_property
     def sections(self):
         return _load_sections(
@@ -234,7 +239,8 @@ def _load_sections(sections_path):
     if sections_path is None or not os.path.exists(sections_path):
         return None
 
-    timed_sections = _timed_sections(_parse_salami(sections_path))
+    salami = _parse_salami(sections_path)
+    timed_sections = _timed_sections(salami)
 
     # Clean sections
     timed_sections_clean = [ts for ts in timed_sections if ts["section"] is not None]
@@ -253,6 +259,24 @@ def _load_sections(sections_path):
     section_data = utils.SectionData(np.array([start_times, end_times]).T, sections)
 
     return section_data
+
+
+def _parse_salami_metadata(fn):
+    s = open(fn).read().split("\n")
+    o = {}
+    for x in s:
+        if x.startswith("#"):
+            if x[2:].startswith("title:"):
+                o["title"] = x[9:]
+            if x[2:].startswith("artist:"):
+                o["artist"] = x[10:]
+            if x[2:].startswith("metre:"):
+                o["meter"] = o.get("meter", []) + [x[9:]]
+            if x[2:].startswith("tonic:"):
+                o["tonic"] = o.get("tonic", []) + [x[9:]]
+        else:
+            break
+    return o
 
 
 def _parse_salami(fn):
