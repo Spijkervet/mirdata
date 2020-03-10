@@ -79,9 +79,21 @@ def make_index(data_path):
                     majmin7inv = os.path.join(annotations_dir, a, "majmin7inv.lab")
                     majmin = os.path.join(annotations_dir, a, "majmin.lab")
                     majmininv = os.path.join(annotations_dir, a, "majmininv.lab")
+
+                    bothchroma = os.path.join(annotations_dir, a, "bothchroma.csv")
+                    tuning = os.path.join(annotations_dir, a, "tuning.csv")
+
                     index[track_id] = {
                         "audio": (audio_rel, audio_checksum),
                         "salami": (annot_rel, annot_checksum),
+                        "bothchroma": (
+                            os.path.join("annotations", a, "bothchroma.csv"),
+                            md5(bothchroma)
+                        ),
+                        "tuning": (
+                            os.path.join("annotations", a, "tuning.csv"),
+                            md5(tuning)
+                        ),
                         "lab_full": (
                             os.path.join("annotations", a, "full.lab"),
                             md5(full_fp),

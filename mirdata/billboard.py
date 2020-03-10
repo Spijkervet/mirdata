@@ -43,6 +43,12 @@ CHORDS_MIREX13 = download_utils.RemoteFileMetadata(
     destination_dir=None,
 )
 
+CHORDS_CHORDINO = download_utils.RemoteFileMetadata(
+    filename="billboard-2.0-chordino.tar.xz",
+    url="https://www.dropbox.com/s/e9dm23vbawg9dsw/billboard-2.0-chordino.tar.xz?dl=1",
+    checksum="530218e8d7077bbd4b08b45f447f5e8f",
+    destination_dir=None,
+)
 
 def _load_metadata(data_home):
 
@@ -93,12 +99,12 @@ class Track(object):
         track_id (str): track id
         audio_path (str): audio path of the track
         chart date: release date of the track
-        target rank: 
-        actual rank: 
+        target rank:
+        actual rank:
         title: title of the track
         artist: artist name
-        peak rank: 
-        weeks on chart: 
+        peak rank:
+        weeks on chart:
     """
 
     def __init__(self, track_id, data_home=None):
@@ -146,6 +152,8 @@ class Track(object):
         )
 
         self.audio_path = os.path.join(self._data_home, self._track_paths["audio"][0])
+        self.bothchroma_path = os.path.join(self._data_home, self._track_paths["bothchroma"][0])
+        self.tuning_path = os.path.join(self._data_home, self._track_paths["tuning"][0])
         self.chart_date = self._track_metadata["chart_date"]
         self.target_rank = self._track_metadata["target_rank"]
         self.actual_rank = self._track_metadata["actual_rank"]
@@ -179,6 +187,16 @@ class Track(object):
         return _parse_salami_metadata(
             os.path.join(self._data_home, self._track_paths["salami"][0])
         )
+    
+    @property
+    def chroma(self):
+        with open(self.bothchroma_path, 'r') as f:
+            return np.array([l for l in csv.reader(f)])
+
+    @property
+    def tuning(self):
+        with open(self.tuning_path, 'r') as f:
+            return np.array([l for l in csv.reader(f)])
 
     @utils.cached_property
     def sections(self):
@@ -375,7 +393,7 @@ def download(data_home=None, force_overwrite=False):
         for download. If you have the McGill-Billboard dataset, place the contents into a
         folder called McGill-Billboard with the following structure:
             > McGill-Billboard/
-                > annotations/ 
+                > annotations/
                 > audio/
         and copy the McGill-Billboard folder to {}
     """.format(
@@ -384,7 +402,7 @@ def download(data_home=None, force_overwrite=False):
 
     download_utils.downloader(
         data_home,
-        tar_downloads=[ANNOTATIONS_REMOTE, CHORDS_REMOTE, CHORDS_MIREX13],
+        tar_downloads=[ANNOTATIONS_REMOTE, CHORDS_REMOTE, CHORDS_MIREX13, CHORDS_CHORDINO],
         file_downloads=[INDEX_REMOTE],
         info_message=info_message,
         force_overwrite=force_overwrite,
