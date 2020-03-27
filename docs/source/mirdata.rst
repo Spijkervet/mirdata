@@ -14,16 +14,35 @@ mirdata.beatles
 .. automodule:: mirdata.beatles
    :members:
 
+
+mirdata.dali
+^^^^^^^^^^^^
+
+.. automodule:: mirdata.dali
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 mirdata.guitarset
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.guitarset
    :members:
    :undoc-members:
    :show-inheritance:
 
+mirdata.gtzan_genre
+^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: mirdata.gtzan_genre
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 mirdata.ikala
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 .. automodule:: mirdata.ikala
    :members:
@@ -31,7 +50,7 @@ mirdata.ikala
    :show-inheritance:
 
 mirdata.medleydb\_melody
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.medleydb_melody
    :members:
@@ -39,7 +58,7 @@ mirdata.medleydb\_melody
    :show-inheritance:
 
 mirdata.medleydb\_pitch
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.medleydb_pitch
    :members:
@@ -48,7 +67,7 @@ mirdata.medleydb\_pitch
 
 
 mirdata.medley_solos_db
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.medley_solos_db
    :members:
@@ -65,23 +84,15 @@ mirdata.orchset
    :show-inheritance:
 
 mirdata.rwc_classical
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.rwc_classical
    :members:
    :undoc-members:
    :show-inheritance:
 
-mirdata.rwc_genre
-^^^^^^^^^^^^^^^
-
-.. automodule:: mirdata.rwc_genre
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 mirdata.rwc_jazz
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.rwc_jazz
    :members:
@@ -89,7 +100,7 @@ mirdata.rwc_jazz
    :show-inheritance:
 
 mirdata.rwc_popular
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.rwc_popular
    :members:
@@ -98,7 +109,7 @@ mirdata.rwc_popular
 
 
 mirdata.salami
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.salami
    :members:
@@ -106,28 +117,20 @@ mirdata.salami
    :show-inheritance:
 
 
-mirdata.dali
+mirdata.tinysol
 ^^^^^^^^^^^^^^^
 
-.. automodule:: mirdata.dali
+.. automodule:: mirdata.tinysol
    :members:
    :undoc-members:
    :show-inheritance:
 
-
-mirdata.gtzan_genre
-^^^^^^^^^^^^^^^
-
-.. automodule:: mirdata.gtzan_genre
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 Utilities
 ----------
 
 mirdata.utils
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 .. automodule:: mirdata.utils
    :members:
@@ -136,7 +139,7 @@ mirdata.utils
 
 
 mirdata.download_utils
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.download_utils
    :members:
@@ -145,7 +148,7 @@ mirdata.download_utils
 
 
 mirdata.jams_utils
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 .. automodule:: mirdata.jams_utils
    :members:

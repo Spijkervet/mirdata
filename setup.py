@@ -1,23 +1,39 @@
 """ Setup script for mir_datasets. """
+from importlib.machinery import SourceFileLoader
 from setuptools import setup, find_packages
+
+version_sfl = SourceFileLoader('mirdata.version', 'mirdata/version.py')
+version_module = version_sfl.load_module()
+
+with open('README.md', 'r') as fdesc:
+    long_description = fdesc.read()
 
 if __name__ == '__main__':
     setup(
         name='mirdata',
-        version='0.1.1',
+        version=version_module.version,
         description='Common loaders for MIR datasets.',
         url='https://github.com/mir-dataset-loaders/mirdata',
         packages=find_packages(exclude=['test', '*.test', '*.test.*']),
         download_url='http://github.com/mir-dataset-loaders/mirdata/releases',
         package_data={'mirdata': ['indexes/*']},
-        long_description="""Common loaders for MIR datasets.""",
+        long_description=long_description,
+        long_description_content_type='text/markdown',
+        classifiers=[
+            "License :: OSI Approved :: BSD License",
+            "Programming Language :: Python",
+            "Development Status :: 3 - Alpha",
+            "Intended Audience :: Science/Research",
+            "Topic :: Multimedia :: Sound/Audio :: Analysis",
+            "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
+        ],
         keywords='mir dataset loader audio',
         license='BSD-3-Clause',
         install_requires=[
             'tqdm',
             'librosa >= 0.7.0',
             'numpy>=1.16',
-            'six',
             'jams',
             'requests',
         ],
@@ -34,10 +50,12 @@ if __name__ == '__main__':
                 'dali-dataset',
             ],
             'docs': [
+                'DALI-dataset>=1.0.0',
+                'numpydoc',
+                'recommonmark',
                 'sphinx',
                 'sphinxcontrib-napoleon',
                 'sphinx_rtd_theme',
-                'numpydoc',
             ],
             'dali': ['DALI-dataset>=1.0.0'],
         },

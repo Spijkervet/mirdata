@@ -1,48 +1,46 @@
 from __future__ import absolute_import
 
-import os
-
 import numpy as np
-import pytest
 import DALI
 
 from mirdata import dali, utils
-from tests.test_utils import DEFAULT_DATA_HOME
+from tests.test_utils import run_track_tests
 
 
 def test_track():
-    # test data home None
-    track_default = dali.Track('4b196e6c99574dd49ad00d56e132712b')
-    assert track_default._data_home == os.path.join(DEFAULT_DATA_HOME, 'DALI')
 
+    default_trackid = '4b196e6c99574dd49ad00d56e132712b'
     data_home = 'tests/resources/mir_datasets/DALI'
+    track = dali.Track(default_trackid, data_home=data_home)
 
-    with pytest.raises(ValueError):
-        dali.Track('asdf', data_home=data_home)
-
-    track = dali.Track('4b196e6c99574dd49ad00d56e132712b', data_home=data_home)
-    assert track.track_id == '4b196e6c99574dd49ad00d56e132712b'
-    assert track._data_home == data_home
-    assert track._track_paths == {
-        'audio': [
-            'audio/4b196e6c99574dd49ad00d56e132712b.mp3',
-            '5f01ab8cd5efe947b1a2944e78e55258',
-        ],
-        'annot': [
-            'annotations/4b196e6c99574dd49ad00d56e132712b.gz',
-            'c99a5ce0b1581f2420d0706c6f7f7118',
-        ],
+    expected_attributes = {
+        'album': 'Mezmerize',
+        'annotation_path': 'tests/resources/mir_datasets/DALI/'
+            + 'annotations/4b196e6c99574dd49ad00d56e132712b.gz',
+        'artist': 'System Of A Down',
+        'audio_path': 'tests/resources/mir_datasets/DALI/'
+            + 'audio/4b196e6c99574dd49ad00d56e132712b.mp3',
+        'audio_url': 'zUzd9KyIDrM',
+        'dataset_version': 1,
+        'ground_truth': False,
+        'language': 'english',
+        'release_date': '2005',
+        'scores_manual': 0,
+        'scores_ncc': 0.9644769596900552,
+        'title': 'B.Y.O.B.',
+        'track_id': '4b196e6c99574dd49ad00d56e132712b',
+        'url_working': True,
     }
-    assert (
-        track.audio_path
-        == 'tests/resources/mir_datasets/DALI/'
-        + 'audio/4b196e6c99574dd49ad00d56e132712b.mp3'
-    )
-    assert track.title == 'B.Y.O.B.'
-    assert type(track.notes) == utils.NoteData
-    assert type(track.words) == utils.LyricData
-    assert type(track.paragraphs) == utils.LyricData
-    assert type(track.annotation_object) == DALI.Annotations
+
+    expected_property_types = {
+        'notes': utils.NoteData,
+        'words': utils.LyricData,
+        'lines': utils.LyricData,
+        'paragraphs': utils.LyricData,
+        'annotation_object': DALI.Annotations
+    }
+
+    run_track_tests(track, expected_attributes, expected_property_types)
 
     path_save = '/home/mfuentes/astre/code/repositories/mirdata/tests/resources/mir_datasets/DALI/annotations'
     name = 'test'
@@ -62,41 +60,23 @@ def test_track():
     assert track.__repr__() == repr_string
 
 
-def test_track_ids():
-    track_ids = dali.track_ids()
-    assert type(track_ids) is list
-    assert len(track_ids) == 5358
-
-
-def test_load():
-    data_home = 'tests/resources/mir_datasets/DALI'
-    dali_data = dali.load(data_home=data_home)
-    assert type(dali_data) is dict
-    assert len(dali_data.keys()) == 5358
-
-    dali_data_default = dali.load()
-    assert type(dali_data_default) is dict
-    assert len(dali_data_default.keys()) == 5358
-
-
 def test_load_notes():
     notes_path = (
         'tests/resources/mir_datasets/DALI/annotations/'
         + '4b196e6c99574dd49ad00d56e132712b.gz'
     )
-    note_data = dali._load_annotations_granularity(notes_path, 'notes')
+    note_data = dali.load_annotations_granularity(notes_path, 'notes')
 
     assert type(note_data) == utils.NoteData
-    assert type(note_data.start_times) == np.ndarray
-    assert type(note_data.end_times) == np.ndarray
+    assert type(note_data.intervals) == np.ndarray
     assert type(note_data.notes) == np.ndarray
 
-    assert np.array_equal(note_data.start_times, np.array([24.125, 24.273, 24.420]))
-    assert np.array_equal(note_data.end_times, np.array([24.273, 24.420, 24.568]))
+    assert np.array_equal(note_data.intervals[:, 0], np.array([24.125, 24.273, 24.420]))
+    assert np.array_equal(note_data.intervals[:, 1], np.array([24.273, 24.420, 24.568]))
     assert np.array_equal(note_data.notes, np.array([1108.731, 1108.731, 1108.731]))
 
     # load a file which doesn't exist
-    notes_none = dali._load_annotations_granularity('fake/file/path', 'notes')
+    notes_none = dali.load_annotations_granularity('fake/file/path', 'notes')
     assert notes_none is None
 
 
@@ -105,7 +85,7 @@ def test_load_words():
         'tests/resources/mir_datasets/DALI/annotations/'
         + '4b196e6c99574dd49ad00d56e132712b.gz'
     )
-    word_data = dali._load_annotations_granularity(data_path, 'words')
+    word_data = dali.load_annotations_granularity(data_path, 'words')
 
     assert type(word_data) == utils.LyricData
     assert type(word_data.start_times) == np.ndarray
@@ -117,7 +97,7 @@ def test_load_words():
     assert np.array_equal(word_data.lyrics, np.array(['why', 'do', 'they']))
 
     # load a file which doesn't exist
-    words_none = dali._load_annotations_granularity('fake/file/path', 'words')
+    words_none = dali.load_annotations_granularity('fake/file/path', 'words')
     assert words_none is None
 
 
@@ -126,7 +106,7 @@ def test_load_lines():
         'tests/resources/mir_datasets/DALI/annotations/'
         + '4b196e6c99574dd49ad00d56e132712b.gz'
     )
-    line_data = dali._load_annotations_granularity(data_path, 'lines')
+    line_data = dali.load_annotations_granularity(data_path, 'lines')
 
     assert type(line_data) == utils.LyricData
     assert type(line_data.start_times) == np.ndarray
@@ -138,11 +118,11 @@ def test_load_lines():
     print(line_data.lyrics)
 
     assert np.array_equal(line_data.start_times, np.array([24.125, 24.42]))
-    assert np.array_equal(line_data.end_times, np.array([24.42,  24.568]))
+    assert np.array_equal(line_data.end_times, np.array([24.42, 24.568]))
     assert np.array_equal(line_data.lyrics, np.array(['why do', 'they']))
 
     # load a file which doesn't exist
-    line_none = dali._load_annotations_granularity('fake/file/path', 'lines')
+    line_none = dali.load_annotations_granularity('fake/file/path', 'lines')
     assert line_none is None
 
 
@@ -151,7 +131,7 @@ def test_load_paragraphs():
         'tests/resources/mir_datasets/DALI/annotations/'
         + '4b196e6c99574dd49ad00d56e132712b.gz'
     )
-    par_data = dali._load_annotations_granularity(data_path, 'paragraphs')
+    par_data = dali.load_annotations_granularity(data_path, 'paragraphs')
 
     assert type(par_data) == utils.LyricData
     assert type(par_data.start_times) == np.ndarray
@@ -163,7 +143,7 @@ def test_load_paragraphs():
     assert np.array_equal(par_data.lyrics, np.array(['why do', 'they']))
 
     # load a file which doesn't exist
-    pars_none = dali._load_annotations_granularity('fake/file/path', 'paragraphs')
+    pars_none = dali.load_annotations_granularity('fake/file/path', 'paragraphs')
     assert pars_none is None
 
 
@@ -172,7 +152,7 @@ def test_load_dali_object():
         'tests/resources/mir_datasets/DALI/annotations/'
         + '4b196e6c99574dd49ad00d56e132712b.gz'
     )
-    dali_data = dali._load_annotations_class(data_path)
+    dali_data = dali.load_annotations_class(data_path)
 
     assert type(dali_data) == DALI.Annotations
     assert dali_data.annotations['annot']['notes'] == [
@@ -243,14 +223,5 @@ def test_load_dali_object():
     ]
 
     # load a file which doesn't exist
-    dali_none = dali._load_annotations_class('fake/file/path')
+    dali_none = dali.load_annotations_class('fake/file/path')
     assert dali_none is None
-
-
-def test_validate():
-    dali.validate()
-    dali.validate(silence=True)
-
-
-def test_cite():
-    dali.cite()
